@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Image</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Sube tu imagen</h1>
+        <form id="upload-form" action="{{ url_for('upload', user_id=user_id) }}" method="post" enctype="multipart/form-data">
+            <label for="file-input" class="file-input-label">Tomar Foto</label>
+            <input id="file-input" type="file" accept="image/*" capture="environment" required>
+            <img id="preview" src="#" alt="Vista previa de la imagen" style="display: none; max-width: 100%; margin-top: 10px;">
+            <input type="hidden" id="latitude" name="latitude">
+            <input type="hidden" id="longitude" name="longitude">
+            <input type="hidden" id="resized-file" name="resized_file">
+            <button type="submit">Enviar Foto</button>
+        </form>
+    </div>
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            const fileInput = document.getElementById('file-input');
+            const resizedFileInput = document.getElementById('resized-file');
+
+            if (!resizedFileInput.value) {
+                event.preventDefault();
+                alert('Image is not processed yet.');
+                return;
+            }
+
+            document.querySelector('button').disabled = true;
+            document.querySelector('button').textContent = 'Uploading...';
+        });
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                document.getElementById('latitude').value = position.coords.latitude;
+                document.getElementById('longitude').value = position.coords.longitude;
+            });
+        } else {
+            alert('Geolocation is not supported by this browser.');
+        }
+
+        document.getElementById('file-input').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+
+                        // Ajustar la resolución deseada (por ejemplo, 640x480)
+                        const desiredWidth = 480;
+                        const desiredHeight = 640;
+                        
+
+                        // Redimensionar el canvas
+                        canvas.width = desiredWidth;
+                        canvas.height = desiredHeight;
+
+                        // Dibujar la imagen redimensionada en el canvas
+                        ctx.drawImage(img, 0, 0, desiredWidth, desiredHeight);
+
+                        // Comprimir la imagen redimensionada a calidad 0.7 (70%)
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+                        // Mostrar la vista previa de la imagen redimensionada y comprimida
+                        document.getElementById('preview').src = compressedDataUrl;
+                        document.getElementById('preview').style.display = 'block';
+
+                        // Guardar el Data URL de la imagen comprimida en un input hidden
+                        document.getElementById('resized-file').value = compressedDataUrl;
+                    }
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Image {{ result }}</h1>
+        <p>Required score to pass: 0.5</p>
+        <p>Score: {{ score }}</p>
+        <p>Date and Time: {{ date_time }}</p>
+        <p>Coordinates: {{ latitude }}, {{ longitude }}</p>
+        <p>Image within limits: {{ 'Yes' if within else 'No' }}</p>
+        <p>Time encode base64: {{ tbase }}</p>
+        <p>Time upload, request and answer openai: {{ trequest }}</p>
+
+        <p>Marca: {{ marca }}</p>
+
+        {% if not approved %}
+            <p>Reasons for rejection:</p>
+            <ul>
+                {% for reason in reasons %}
+                    <li>{{ reason }}</li>
+                {% endfor %}
+            </ul>
+            <a href="{{ url_for('retake_photo', user_id=user_id) }}">Volver a tomar la foto</a>
+        {% else %}
+            <a href="{{ url_for('return_to_whatsapp', user_id=user_id) }}">Return to WhatsApp</a>
+        {% endif %}
+    </div>
+</body>
+</html>
